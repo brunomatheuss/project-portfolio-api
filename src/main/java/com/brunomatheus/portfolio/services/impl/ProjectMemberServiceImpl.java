@@ -13,7 +13,7 @@ import com.brunomatheus.portfolio.exceptions.NotFoundException;
 import com.brunomatheus.portfolio.mappers.ProjectMapper;
 import com.brunomatheus.portfolio.repositories.ProjectMemberRepository;
 import com.brunomatheus.portfolio.repositories.ProjectRepository;
-import com.brunomatheus.portfolio.services.ExternalMemberService;
+import com.brunomatheus.portfolio.services.external.ExternalMemberService;
 import com.brunomatheus.portfolio.services.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

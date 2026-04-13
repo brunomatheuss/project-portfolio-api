@@ -7,6 +7,7 @@ import com.brunomatheus.portfolio.repositories.ProjectMemberRepository;
 import com.brunomatheus.portfolio.repositories.ProjectRepository;
 import com.brunomatheus.portfolio.services.PortfolioReportService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PortfolioReportServiceImpl implements PortfolioReportService {

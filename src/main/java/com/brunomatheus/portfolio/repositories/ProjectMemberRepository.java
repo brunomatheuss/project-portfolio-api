@@ -17,8 +17,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMemberEnti
 
     Optional<ProjectMemberEntity> findByProjectIdAndMemberId(Long projectId, Long memberId);
 
-    void deleteByProjectIdAndMemberId(Long projectId, Long memberId);
-
     @Query("""
         SELECT COUNT(DISTINCT pm.projectId)
         FROM ProjectMemberEntity pm

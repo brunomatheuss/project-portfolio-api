@@ -2,17 +2,20 @@ package com.brunomatheus.portfolio.exceptions;
 
 import com.brunomatheus.portfolio.dtos.response.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class RestExceptionHandler {
 
@@ -20,6 +23,8 @@ public class RestExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleNotFoundException(
             NotFoundException ex,
             HttpServletRequest request) {
+
+        log.error("Resource not found. Path: {}, message: {}", request.getRequestURI(), ex.getMessage());
 
         ErrorResponseDTO response = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
@@ -36,6 +41,8 @@ public class RestExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleBusinessException(
             BusinessException ex,
             HttpServletRequest request) {
+
+        log.error("Business rule violation. Path: {}, message: {}", request.getRequestURI(), ex.getMessage());
 
         ErrorResponseDTO response = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
@@ -55,11 +62,11 @@ public class RestExceptionHandler {
 
         Map<String, String> validationErrors = new HashMap<>();
 
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            validationErrors.put(fieldName, errorMessage);
-        });
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                validationErrors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        log.error("Validation error. Path: {}, fields: {}", request.getRequestURI(), validationErrors);
 
         ErrorResponseDTO response = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
@@ -78,6 +85,8 @@ public class RestExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
+        log.error("Unexpected internal error. Path: {}", request.getRequestURI(), ex);
+
         ErrorResponseDTO response = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -87,5 +96,43 @@ public class RestExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNoResourceFoundException(
+            NoResourceFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn("Resource not found. Path: {}, message: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponseDTO response = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message("Resource not found")
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        log.warn("Invalid request body. Path: {}, message: {}", request.getRequestURI(), ex.getMessage());
+
+        String message = "Invalid request body. Check field values and enum names.";
+
+        ErrorResponseDTO response = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(message)
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

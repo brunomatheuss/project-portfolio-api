@@ -1,4 +1,4 @@
-package com.brunomatheus.portfolio.services;
+package com.brunomatheus.portfolio.services.external;
 
 import com.brunomatheus.portfolio.dtos.external.MemberDTO;
 import com.brunomatheus.portfolio.dtos.external.request.CreateMemberRequestDTO;
